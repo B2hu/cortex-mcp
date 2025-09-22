@@ -8,19 +8,16 @@ import os
 import httpx
 import asyncio
 
-# Load environment variables from .env file
 load_dotenv()
 
 app = FastMCP("cortex-analysis")
 
-# ---- Config from .env ----
 CORTEX_URL = os.getenv("CORTEX_URL", "http://localhost:9001")
 CORTEX_API_KEY = os.getenv("CORTEX_API_KEY", "")
 ABUSEIPDB_ANALYZER_ID = os.getenv("ABUSEIPDB_ANALYZER_ID", "")
 VIRUSTOTAL_ANALYZER_ID = os.getenv("VIRUSTOTAL_ANALYZER_ID", "")
 URLSCAN_ANALYZER_ID = os.getenv("URLSCAN_ANALYZER_ID", "")
 
-# ---- Request model ----
 class AnalyzeParams(BaseModel):
     input_value: str = Field(..., description="IP, domain/FQDN, or hash to analyze.")
     analyzer_id: Optional[str] = Field(
@@ -30,27 +27,23 @@ class AnalyzeParams(BaseModel):
         None, description="Maximum polling retries (default 5)."
     )
 
-# ---- Type detection ----
 def detect_type(value: str) -> str:
     v = value.strip()
     if not v:
         raise ValueError("Input cannot be empty")
 
-    # IP check
     try:
         ipaddress.ip_address(v)
         return "ip"
     except ValueError:
         pass
 
-    # Domain/FQDN
     domain_pattern = re.compile(
         r"^(?=.{1,253}$)(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[A-Za-z]{2,63}$"
     )
     if domain_pattern.match(v):
         return "fqdn"
 
-    # Hash (MD5 / SHA1 / SHA256)
     if re.fullmatch(r"[A-Fa-f0-9]{32}", v) or \
        re.fullmatch(r"[A-Fa-f0-9]{40}", v) or \
        re.fullmatch(r"[A-Fa-f0-9]{64}", v):
@@ -58,7 +51,6 @@ def detect_type(value: str) -> str:
 
     raise ValueError("Not a valid IP, FQDN, or supported hash.")
 
-# ---- Cortex interaction ----
 async def run_analyzer_by_id(
     analyzer_id: str,
     value: str,
@@ -95,7 +87,7 @@ async def run_analyzer_by_id(
 
     raise RuntimeError("Analyzer job did not complete in time")
 
-# ---- Tools ----
+# Tools 
 @app.tool()
 async def analyze_with_abuseipdb(params: AnalyzeParams):
     """Analyze input with AbuseIPDB (mostly IPs)."""
@@ -129,6 +121,5 @@ async def analyze_with_urlscan(params: AnalyzeParams):
     except Exception as e:
         return {"error": str(e)}
 
-# ---- Entry ----
 if __name__ == "__main__":
     app.run()

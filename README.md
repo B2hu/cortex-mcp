@@ -10,9 +10,9 @@ This server connects agents to your Cortex Analyzers using the Model Context Pro
 
 ## Available Tools
 
-* `analyze_with_abuseipdb`: Perform a Threat Intiligence For IP Addresses
+* `analyze_with_abuseipdb`: Analyze input with AbuseIPDB (Only IP Addresses).
 * `analyze_with_virustotal`: Analyze input with VirusTotal (IP, domain/FQDN, hash).
-* `analyze_with_urlscan`: PAnalyze domains/URLs with urlscan.io analyzer.
+* `analyze_with_urlscan`: Analyze domains/URLs with urlscan.io analyzer.
 
 ## Prerequisites
 
